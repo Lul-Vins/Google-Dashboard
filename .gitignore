@@ -1,0 +1,57 @@
+# Python
+*.pyc
+*.pyo
+*.pyd
+__pycache__/
+*.db
+*.sqlite3
+
+# Django
+*.log
+*.pot
+*.pyc
+*.pyo
+__pycache__/
+db.sqlite3
+media
+static
+
+# Environments
+.env
+.env.*
+venv/
+ENV/
+env/
+.venv/
+
+# Settings.py
+settings.py
+
+# Migrations
+*/migrations/*
+
+# VS Code
+.vscode/
+
+# PyCharm
+.idea/
+
+# Jupyter Notebooks
+.ipynb_checkpoints/
+
+# Docker
+docker-compose.override.yml
+Dockerfile
+
+# Test output
+coverage/
+nosetests.xml
+coverage.xml
+*.cover
+.hypothesis/
+.pytest_cache/
+
+# Other files
+*.bak
+*.swp
+*.swo
