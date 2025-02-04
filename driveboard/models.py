@@ -45,7 +45,7 @@ class User(AbstractBaseUser, PermissionsMixin):
     
 class HistorialdeArchivos(models.Model):
     user = models.ForeignKey(
-        settings.AUTH_USER_MODEL,  # Relación con el modelo CustomUser
+        settings.AUTH_USER_MODEL,  # Relación con el modelo User
         on_delete=models.CASCADE,
         related_name='archivos_guardados'
     )
