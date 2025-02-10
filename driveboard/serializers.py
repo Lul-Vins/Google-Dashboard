@@ -2,7 +2,7 @@ import re
 from rest_framework import serializers
 from django.contrib.auth import authenticate
 from rest_framework_simplejwt.tokens import RefreshToken
-from .models import User, HistorialdeArchivos
+from .models import User, Ideahistoria, HistorialdeArchivos
 
 class UserSerializer(serializers.ModelSerializer):
     class Meta:
@@ -51,3 +51,15 @@ class LoginSerializer(serializers.Serializer):
                'access': str(refresh.access_token),
                'refresh': str(refresh),
           }
+
+class IdeahistoriaSerializer(serializers.ModelSerializer):
+     class Meta:
+          model = Ideahistoria
+          fields = '__all__'
+          read_only_fields = ['user']
+     
+class HistorialdeArchivosSerializer(serializers.ModelSerializer):
+     class Meta:
+          model = HistorialdeArchivos
+          fields = '__all__'
+          read_only_fields = ['user']

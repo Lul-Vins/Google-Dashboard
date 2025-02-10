@@ -13,6 +13,8 @@ DEBUG = True
 ALLOWED_HOSTS = []
 
 AUTH_USER_MODEL = 'driveboard.User'
+
+GOOGLE_OAUTH_CREDENTIALS_JSON = os.getenv("GOOGLE_OAUTH_CREDENTIALS_JSON")
 # Application definition
 
 INSTALLED_APPS = [
