@@ -3,6 +3,7 @@ import jwt
 import requests
 from rest_framework.response import Response
 from rest_framework_simplejwt.views import TokenRefreshView
+from rest_framework_simplejwt.tokens import AccessToken
 from rest_framework.views import APIView
 from .serializers import UserSerializer, LoginSerializer, IdeahistoriaSerializer, HistorialdeArchivosSerializer
 from .models import User, Ideahistoria, HistorialdeArchivos
@@ -12,12 +13,14 @@ from django.conf import settings
 from google_auth_oauthlib.flow import Flow
 from google.auth.transport.requests import Request
 from django.http import JsonResponse
-from django.shortcuts import redirect
+from django.shortcuts import redirect, render
 from django.urls import reverse
+from django.contrib.auth.decorators import login_required
 import json
-from datetime import datetime,timedelta
+from datetime import datetime,timedelta, timezone
 from django.contrib.auth import get_user_model
-
+from .idea_to_drive import *
+from .forms import IdeaForm
 
 class RegisterUserView(generics.CreateAPIView):
     queryset = User.objects.all()
@@ -48,7 +51,16 @@ class IdeahistoriaView(viewsets.ModelViewSet):
         return Ideahistoria.objects.filter(user=self.request.user)
 
     def perform_create(self, serializer):
-        serializer.save(user=self.request.user)
+
+        idea =serializer.save(user=self.request.user)
+
+        try:
+            response = upload_idea_to_drive(user=self.request.user, idea_title=idea.title_idea,
+            idea_content=idea.descripcion)
+            print("Guardado en Drive:", response)
+        except Exception as e:
+            print("Error al subir a Drive", str(e))
+                                              
 
 class HistorialdeArchivosView(viewsets.ModelViewSet):
     serializer_class = HistorialdeArchivosSerializer
@@ -64,13 +76,9 @@ os.environ['OAUTHLIB_INSECURE_TRANSPORT'] = '1'
 SCOPES = ['openid', 'https://www.googleapis.com/auth/userinfo.email', 'https://www.googleapis.com/auth/drive']
 
 def generate_jwt(user):
-    """Genera un token JWT para el usuario autenticado con Google"""
-    payload = {
-        "user_id": user.id,
-        "email": user.email,
-        "exp": datetime.now() + timedelta(days=7)
-    }
-    return jwt.encode(payload, settings.SECRET_KEY, algorithm="HS256")
+    """Genera un token JWT compatible con Simple JWT"""
+    token = AccessToken.for_user(user)
+    return str(token)
 
 
 def google_oauth(request):
@@ -81,24 +89,15 @@ def google_oauth(request):
     )
 
     if 'code' not in request.GET:
-        authorization_url, state = flow.authorization_url(access_type='offline', include_granted_scopes='true')
+        authorization_url, state = flow.authorization_url(access_type='offline', include_granted_scopes='true', prompt='consent')
 
         request.session['state'] = state  # Protección CSRF
         return redirect(authorization_url)
 
     flow.fetch_token(authorization_response=request.get_full_path())
+    
     credentials = flow.credentials
-    request.session['google_credentials'] = credentials_to_dict(credentials)
-
-
-def credentials_to_dict(credentials):
-    """Convierte el objeto Credentials en un diccionario seguro"""
-    return {
-        'token': credentials.token,
-        'refresh_token': credentials.refresh_token,
-        'client_id': credentials.client_id,
-        'scopes': credentials.scopes
-    }
+    
 
 
 def google_auth_callback(request):
@@ -139,6 +138,10 @@ def google_auth_callback(request):
     User = get_user_model()
     user, created = User.objects.get_or_create(email=email)
 
+    if credentials.token:
+        user.google_refresh_token = credentials.refresh_token
+        user.save()
+
     # Generar un JWT para el usuario
     jwt_token = generate_jwt(user)
 
@@ -148,6 +151,29 @@ def google_auth_callback(request):
         "token": jwt_token
     })
 
+def login_view(request):
+     """Vista para la pagina de inicio de sesion"""
+     return render(request, "ideas_app/login.html")
+
+@login_required
+def dashboard_view(request):
+    """Vista para mostrar las ideas guardadas y formulario"""
+    ideas = Ideahistoria.objects.filter(user=request.user)
+    return render(request, "ideas_app/dashboard.html", {"ideas":ideas})
+
+@login_required
+def crear_idea(request):
+    """Vista para crear una idea"""
+    if request.method == "POST":
+        form = IdeaForm(request.POST)
+        if form.is_valid():
+            idea = form.save(commit=False)
+            idea.user = request.user
+            idea.save()
+            return redirect("dashboard")
+        else:
+            form = IdeaForm()
+    return render(request, "ideas_app/dashboard.html", {"form":form})
 
 
 

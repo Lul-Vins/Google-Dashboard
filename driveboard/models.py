@@ -22,7 +22,8 @@ class User(AbstractBaseUser, PermissionsMixin):
     email = models.EmailField(unique=True)
     is_active = models.BooleanField(default=True)
     is_staff = models.BooleanField(default=False)
-
+    google_refresh_token = models.CharField(max_length=255, null=True, blank=True)
+    google_drive_folder_id = models.CharField(max_length=255, null=True, blank=True)
     date_joined = models.DateTimeField(default=timezone.now)
     last_login = models.DateTimeField(null=True, blank=True)
 
@@ -64,6 +65,7 @@ class Ideahistoria(models.Model):
     )
     title_idea = models.CharField(max_length=255)
     descripcion = models.TextField()
+    drive_file_id = models.CharField(max_length=255, blank=True, null=True)
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
 

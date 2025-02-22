@@ -1,0 +1,32 @@
+{% extends "ideas_app/base.html" %}
+
+{% block title %}Tus Ideas{% endblock %}
+
+{% block content %}
+<h2>Tus Ideas Guardadas</h2>
+
+<ul class="list-group">
+    {% for idea in ideas %}
+        <li class="list-group-item">
+            <strong>{{ idea.title_idea }}</strong> - {{ idea.created_at|date:"d M Y" }}
+            <p>{{ idea.descripcion }}</p>
+        </li>
+    {% empty %}
+        <li class="list-group-item">No tienes ideas guardadas aún.</li>
+    {% endfor %}
+</ul>
+
+<h3 class="mt-4">Nueva Idea</h3>
+<form method="post" action="{% url 'crear_idea' %}">
+    {% csrf_token %}
+    <div class="mb-3">
+        <label for="title" class="form-label">Título</label>
+        <input type="text" class="form-control" id="title" name="title_idea" required>
+    </div>
+    <div class="mb-3">
+        <label for="descripcion" class="form-label">Descripción</label>
+        <textarea class="form-control" id="descripcion" name="descripcion" rows="4" required></textarea>
+    </div>
+    <button type="submit" class="btn btn-success">Guardar Idea</button>
+</form>
+{% endblock %}

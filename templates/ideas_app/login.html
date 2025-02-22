@@ -1,0 +1,11 @@
+{% extends "ideas_app/base.html" %}
+
+{% block title %}Iniciar Sesión{% endblock %}
+
+{% block content %}
+<div class="text-center">
+    <h2>Bienvenido a Ideas App</h2>
+    <p>Autentícate con Google para empezar a guardar tus ideas.</p>
+    <a href="{% url 'google_login' %}" class="btn btn-primary">Iniciar sesión con Google</a>
+</div>
+{% endblock %}

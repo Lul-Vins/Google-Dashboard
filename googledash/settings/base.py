@@ -14,6 +14,10 @@ ALLOWED_HOSTS = []
 
 AUTH_USER_MODEL = 'driveboard.User'
 
+GOOGLE_CLIENT_ID = os.getenv("GOOGLE_CLIENT_ID")
+
+GOOGLE_CLIENT_SECRET = os.getenv("GOOGLE_CLIENT_SECRET")
+
 GOOGLE_OAUTH_CREDENTIALS_JSON = os.getenv("GOOGLE_OAUTH_CREDENTIALS_JSON")
 # Application definition
 
@@ -30,7 +34,7 @@ INSTALLED_APPS = [
 
     #External app
     'rest_framework',
-    'rest_framework_simplejwt' 
+    'rest_framework_simplejwt', 
 ]
 
 MIDDLEWARE = [
@@ -48,7 +52,7 @@ ROOT_URLCONF = 'googledash.urls'
 TEMPLATES = [
     {
         'BACKEND': 'django.template.backends.django.DjangoTemplates',
-        'DIRS': [],
+        'DIRS': [BASE_DIR / "templates"],
         'APP_DIRS': True,
         'OPTIONS': {
             'context_processors': [
@@ -116,7 +120,9 @@ REST_FRAMEWORK = {
 }
 
 SIMPLE_JWT = {
-    'ACCESS_TOKEN_LIFETIME': timedelta(days=1),
+    'ACCESS_TOKEN_LIFETIME': timedelta(minutes=30),
     'REFRESH_TOKEN_LIFETIME': timedelta(days=7),
     'AUTH_HEADER_TYPES': ("Bearer",),
+    "SIGNING_KEY": SECRET_KEY,
+    "ALGORITHM": "HS256",
 }
